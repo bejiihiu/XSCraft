@@ -3,20 +3,28 @@ package kz.bejiihiu.xscraft.features.invisibleframes;
 import kz.bejiihiu.xscraft.core.Keys;
 import kz.bejiihiu.xscraft.util.Debug;
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
+import org.bukkit.Scoreboard;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
 public record InvisibleFramesListener(Keys keys) implements Listener {
+
+    private static final String INVISIBLE_GLOW_TEAM = "invisible_glow_frames_purple";
 
     public InvisibleFramesListener(Keys keys) {
         this.keys = keys;
@@ -53,6 +61,9 @@ public record InvisibleFramesListener(Keys keys) implements Listener {
         Debug.info("HangingPlaceEvent: обнаружена tagged рамка в руке (" + (taggedMain ? "MAIN" : "OFF") + "). Делаю entity невидимой.");
 
         frame.setVisible(false);
+        if (frame.getType() == EntityType.GLOW_ITEM_FRAME) {
+            applyGlowSettings(frame);
+        }
         frame.getPersistentDataContainer().set(keys.tagInvisibleFrame(), PersistentDataType.BYTE, (byte) 1);
 
         Debug.info("HangingPlaceEvent: entity рамки помечена PDC и сделана невидимой. key=" + keys.tagInvisibleFrame());
@@ -94,6 +105,27 @@ public record InvisibleFramesListener(Keys keys) implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        if (!(event.getEntity() instanceof ItemFrame frame)) return;
+
+        if (!isTaggedInvisibleFrame(frame)) return;
+        if (frame.getType() != EntityType.GLOW_ITEM_FRAME) return;
+
+        applyGlowSettings(frame);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onChunkLoad(ChunkLoadEvent event) {
+        for (var entity : event.getChunk().getEntities()) {
+            if (!(entity instanceof ItemFrame frame)) continue;
+            if (!isTaggedInvisibleFrame(frame)) continue;
+            if (frame.getType() != EntityType.GLOW_ITEM_FRAME) continue;
+
+            applyGlowSettings(frame);
+        }
+    }
+
     private void handleTaggedFrameBreak(HangingBreakEvent event) {
         if (!(event.getEntity() instanceof ItemFrame frame)) return;
 
@@ -121,5 +153,33 @@ public record InvisibleFramesListener(Keys keys) implements Listener {
         );
 
         Debug.info("HangingBreakEvent: дроп подменён на tagged " + dropType);
+    }
+
+    private boolean isTaggedInvisibleFrame(ItemFrame frame) {
+        PersistentDataContainer pdc = frame.getPersistentDataContainer();
+        Byte flag = pdc.get(keys.tagInvisibleFrame(), PersistentDataType.BYTE);
+        return flag != null && flag == (byte) 1;
+    }
+
+    private void applyGlowSettings(ItemFrame frame) {
+        frame.setGlowing(true);
+
+        ScoreboardManager scoreboardManager = frame.getServer().getScoreboardManager();
+        if (scoreboardManager == null) {
+            Debug.warn("ScoreboardManager недоступен — не могу назначить команду для glow рамки.");
+            return;
+        }
+
+        Scoreboard scoreboard = scoreboardManager.getMainScoreboard();
+        Team team = scoreboard.getTeam(INVISIBLE_GLOW_TEAM);
+        if (team == null) {
+            team = scoreboard.registerNewTeam(INVISIBLE_GLOW_TEAM);
+        }
+
+        if (team.getColor() != ChatColor.LIGHT_PURPLE) {
+            team.setColor(ChatColor.LIGHT_PURPLE);
+        }
+
+        team.addEntry(frame.getUniqueId().toString());
     }
 }
