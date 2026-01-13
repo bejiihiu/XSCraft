@@ -1,13 +1,29 @@
 package kz.bejiihiu.xscraft.util;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 public final class PotionUtil {
 
     private PotionUtil() {}
+
+    public static ItemStack createInvisibilityPotion(Material material) {
+        if (material != Material.POTION && material != Material.SPLASH_POTION && material != Material.LINGERING_POTION) {
+            throw new IllegalArgumentException("Unsupported potion material: " + material);
+        }
+
+        ItemStack stack = new ItemStack(material);
+        if (!(stack.getItemMeta() instanceof PotionMeta pm)) {
+            throw new IllegalStateException("Expected PotionMeta for material: " + material);
+        }
+
+        pm.setBasePotionType(PotionType.INVISIBILITY);
+        stack.setItemMeta(pm);
+
+        return stack;
+    }
 
     public static boolean isInvisibilityPotion(ItemStack stack) {
         if (stack == null) {
@@ -15,23 +31,23 @@ public final class PotionUtil {
             return false;
         }
 
-        if (!(stack.getItemMeta() instanceof PotionMeta pm)) {
+        Material material = stack.getType();
+        if (material != Material.POTION && material != Material.SPLASH_POTION && material != Material.LINGERING_POTION) {
+            Debug.spamInfo("PotionUtil:notPotionType", 1000,
+                    "PotionUtil: тип не зелье (" + material + ") — не INVISIBILITY.");
+            return false;
+        }
+
+        if (!(stack.getItemMeta() instanceof PotionMeta)) {
             Debug.spamInfo("PotionUtil:notPotionMeta", 1000,
                     "PotionUtil: meta не PotionMeta (" + stack.getType() + ") — не INVISIBILITY.");
             return false;
         }
 
-        PotionType base = pm.getBasePotionType();
-        if (base == PotionType.INVISIBILITY) {
-            Debug.spamInfo("PotionUtil:baseOk", 500,
-                    "PotionUtil: базовый тип зелья INVISIBILITY — подходит.");
-            return true;
-        }
-
-        boolean custom = pm.hasCustomEffect(PotionEffectType.INVISIBILITY);
-        Debug.spamInfo("PotionUtil:customCheck", 500,
-                "PotionUtil: base=" + base + ", customInvisibility=" + custom);
-
-        return custom;
+        ItemStack reference = createInvisibilityPotion(material);
+        boolean match = stack.isSimilar(reference);
+        Debug.spamInfo("PotionUtil:similarCheck", 500,
+                "PotionUtil: сравнение с эталоном INVISIBILITY (" + material + ") — " + match);
+        return match;
     }
 }

@@ -30,11 +30,13 @@ public record InvisibleFrameCraft(NamespacedKey key, Keys keys, Material frameTy
 
         ShapelessRecipe recipe = new ShapelessRecipe(key, result);
         recipe.addIngredient(frameType);
-        recipe.addIngredient(new RecipeChoice.MaterialChoice(
-                Material.POTION, Material.SPLASH_POTION, Material.LINGERING_POTION
+        recipe.addIngredient(new RecipeChoice.ExactChoice(
+                PotionUtil.createInvisibilityPotion(Material.POTION),
+                PotionUtil.createInvisibilityPotion(Material.SPLASH_POTION),
+                PotionUtil.createInvisibilityPotion(Material.LINGERING_POTION)
         ));
 
-        Debug.info("InvisibleFrameCraft.createRecipe(): рецепт создан (шаблон: frame + any potion). Валидация — отдельно.");
+        Debug.info("InvisibleFrameCraft.createRecipe(): рецепт создан (шаблон: frame + INVISIBILITY). Валидация — отдельно.");
         return recipe;
     }
 
@@ -45,10 +47,6 @@ public record InvisibleFrameCraft(NamespacedKey key, Keys keys, Material frameTy
             return false;
         }
 
-        int frames = 0;
-        int potions = 0;
-        ItemStack potionStack = null;
-
         ItemStack[] matrix = inv.getMatrix();
         for (int i = 0; i < matrix.length; i++) {
             ItemStack it = matrix[i];
@@ -57,13 +55,10 @@ public record InvisibleFrameCraft(NamespacedKey key, Keys keys, Material frameTy
             Material t = it.getType();
 
             if (t == frameType) {
-                frames += it.getAmount();
                 continue;
             }
 
-            if (t == Material.POTION || t == Material.SPLASH_POTION || t == Material.LINGERING_POTION) {
-                potions += it.getAmount();
-                potionStack = it;
+            if (PotionUtil.isInvisibilityPotion(it)) {
                 continue;
             }
 
@@ -72,17 +67,7 @@ public record InvisibleFrameCraft(NamespacedKey key, Keys keys, Material frameTy
             return false;
         }
 
-        if (frames != 1 || potions != 1) {
-            Debug.spamInfo("InvisibleFrameCraft.badCounts:" + key, 300,
-                    "InvisibleFrameCraft.isValid(): неверные количества. frames=" + frames + ", potions=" + potions + " — false.");
-            return false;
-        }
-
-        boolean invis = PotionUtil.isInvisibilityPotion(potionStack);
-        Debug.spamInfo("InvisibleFrameCraft.potionCheck:" + key, 300,
-                "InvisibleFrameCraft.isValid(): проверка зелья INVISIBILITY=" + invis + " — " + (invis ? "OK" : "FAIL"));
-
-        return invis;
+        return true;
     }
 
     @Override
