@@ -27,6 +27,7 @@ public final class InvisibleFrameItems {
         ItemStack out = new ItemStack(type, 1);
         ItemMeta meta = out.getItemMeta();
         if (meta != null) {
+            meta.setDisplayName(getDisplayName(type));
             meta.getPersistentDataContainer().set(keys.tagInvisibleFrame(), PersistentDataType.BYTE, (byte) 1);
             out.setItemMeta(meta);
             Debug.info("InvisibleFrameItems.createTaggedFrame(): PDC tag установлен: " + keys.tagInvisibleFrame());
@@ -54,5 +55,12 @@ public final class InvisibleFrameItems {
                 "InvisibleFrameItems.isTaggedFrameItem(): type=" + t + ", tagged=" + tagged);
 
         return tagged;
+    }
+
+    private static String getDisplayName(Material type) {
+        if (type == Material.GLOW_ITEM_FRAME) {
+            return "Невидимая светящаяся рамка";
+        }
+        return "Невидимая рамка";
     }
 }
