@@ -4,9 +4,12 @@ package kz.bejiihiu.xscraft.core;
 import kz.bejiihiu.xscraft.auto.AutoDiscovery;
 import kz.bejiihiu.xscraft.craft.CraftRegistry;
 import kz.bejiihiu.xscraft.craft.CraftingValidationListener;
+import kz.bejiihiu.xscraft.craft.RecipeBookListener;
 import kz.bejiihiu.xscraft.features.PluginFeature;
 import kz.bejiihiu.xscraft.util.Debug;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -64,6 +67,17 @@ public final class PluginContext {
                 Debug.error("PluginContext.enable(): ошибка при включении фичи: " + name, t);
             }
         }
+
+        Listener recipeBookListener = new RecipeBookListener(this.crafts);
+        Bukkit.getPluginManager().registerEvents(recipeBookListener, this.plugin);
+        Debug.info("PluginContext.enable(): зарегистрирован RecipeBookListener для открытия рецептов.");
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (NamespacedKey key : crafts.getOwnedRecipes()) {
+                player.discoverRecipe(key);
+            }
+        }
+        Debug.info("PluginContext.enable(): рецепты раскрыты для текущих онлайн игроков.");
 
         Debug.info("PluginContext.enable(): завершено. Активных фич: " + loadedFeatures.size());
     }
