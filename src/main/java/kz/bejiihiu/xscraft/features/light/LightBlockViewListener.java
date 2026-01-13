@@ -89,7 +89,7 @@ public final class LightBlockViewListener implements Listener {
         toRemove.removeAll(nearbyLightBlocks);
 
         if (!toAdd.isEmpty()) {
-            sendBlockChanges(player, toAdd, WrappedBlockData.createData(Material.GLOWSTONE));
+            sendBlockChanges(player, toAdd, WrappedBlockData.createData(Material.SEA_LANTERN));
         }
         if (!toRemove.isEmpty()) {
             sendRealBlockChanges(player, toRemove);
