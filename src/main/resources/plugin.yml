@@ -1,0 +1,7 @@
+name: XSCraft
+version: '1.0'
+main: kz.bejiihiu.xscraft.Main
+api-version: '1.21'
+load: STARTUP
+authors: [ bejiihiu.xs ]
+folia-supported: true
