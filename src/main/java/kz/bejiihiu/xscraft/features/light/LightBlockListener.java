@@ -7,10 +7,14 @@ import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 
 public final class LightBlockListener implements Listener {
 
-    public LightBlockListener() {
+    private final LightBlockViewListener viewListener;
+
+    public LightBlockListener(LightBlockViewListener viewListener) {
+        this.viewListener = viewListener;
         Debug.info("LightBlockListener создан.");
     }
 
@@ -25,5 +29,10 @@ public final class LightBlockListener implements Listener {
 
         event.setDropItems(false);
         event.setExpToDrop(0);
+        b.getWorld().dropItemNaturally(b.getLocation(), new ItemStack(Material.LIGHT));
+
+        if (viewListener != null) {
+            viewListener.refreshForPlayersInRadius(b.getLocation(), 250);
+        }
     }
 }
