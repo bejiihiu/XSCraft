@@ -4,6 +4,7 @@ import kz.bejiihiu.xscraft.core.Keys;
 import kz.bejiihiu.xscraft.util.Debug;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -61,8 +62,11 @@ public final class InvisibleFrameItems {
 
     private static Component getDisplayName(Material type) {
         if (type == Material.GLOW_ITEM_FRAME) {
-            return Component.text("Невидимая рамка").color(TextColor.color(255, 36, 0));
+            return Component.text("Сияющая призрачная рамка")
+                    .color(TextColor.color(255, 36, 0))
+                    .decoration(TextDecoration.ITALIC, false);
         }
-        return Component.text("Невидимая рамка");
+        return Component.text("Призрачная рамка")
+                .decoration(TextDecoration.ITALIC, false);
     }
 }
