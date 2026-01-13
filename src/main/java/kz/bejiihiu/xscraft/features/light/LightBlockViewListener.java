@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,6 +58,13 @@ public final class LightBlockViewListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         clearFakeBlocks(event.getPlayer());
         lastRefreshTimes.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        clearFakeBlocks(player);
+        scheduleRefresh(player);
     }
 
     @EventHandler
