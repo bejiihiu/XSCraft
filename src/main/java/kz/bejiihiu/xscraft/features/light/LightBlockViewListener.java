@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
@@ -32,10 +33,14 @@ import java.util.UUID;
 public final class LightBlockViewListener implements Listener {
 
     private static final int VIEW_RADIUS = 7;
+    private static final int REFRESH_THROTTLE_TICKS = 15;
+    private static final long TICK_MILLIS = 50L;
+    private static final long REFRESH_THROTTLE_MS = REFRESH_THROTTLE_TICKS * TICK_MILLIS;
 
     private final ProtocolManager protocolManager;
     private final Plugin plugin;
     private final Map<UUID, Set<BlockVector>> cachedBlocks = new HashMap<>();
+    private final Map<UUID, Long> lastRefreshTimes = new HashMap<>();
 
     public LightBlockViewListener() {
         this.protocolManager = ProtocolLibrary.getProtocolManager();
@@ -51,6 +56,7 @@ public final class LightBlockViewListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         clearFakeBlocks(event.getPlayer());
+        lastRefreshTimes.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
@@ -61,6 +67,29 @@ public final class LightBlockViewListener implements Listener {
     @EventHandler
     public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
         scheduleRefresh(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if (event.getTo() == null) {
+            return;
+        }
+        if (event.getFrom().getBlockX() == event.getTo().getBlockX()
+                && event.getFrom().getBlockY() == event.getTo().getBlockY()
+                && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+            return;
+        }
+        scheduleRefreshThrottled(event.getPlayer());
+    }
+
+    private void scheduleRefreshThrottled(Player player) {
+        long now = System.currentTimeMillis();
+        Long lastRefresh = lastRefreshTimes.get(player.getUniqueId());
+        if (lastRefresh != null && now - lastRefresh < REFRESH_THROTTLE_MS) {
+            return;
+        }
+        lastRefreshTimes.put(player.getUniqueId(), now);
+        scheduleRefresh(player);
     }
 
     private void scheduleRefresh(Player player) {
