@@ -4,6 +4,7 @@ import kz.bejiihiu.xscraft.auto.LoadOrder;
 import kz.bejiihiu.xscraft.core.PluginContext;
 import kz.bejiihiu.xscraft.features.PluginFeature;
 import kz.bejiihiu.xscraft.util.Debug;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -30,6 +31,13 @@ public final class LightBlockFeature implements PluginFeature {
 
         Debug.info("LightBlockFeature: регистрирую listener на ломание блока LIGHT.");
         ctx.registerEvents(new LightBlockListener());
+
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
+            Debug.info("LightBlockFeature: ProtocolLib найден, регистрирую LightBlockViewListener.");
+            ctx.registerEvents(new LightBlockViewListener());
+        } else {
+            Debug.warn("LightBlockFeature: ProtocolLib не найден, визуализация LIGHT выключена.");
+        }
 
         Debug.info("LightBlockFeature.enable(): завершено.");
     }
