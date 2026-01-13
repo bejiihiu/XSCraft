@@ -29,15 +29,17 @@ public final class LightBlockFeature implements PluginFeature {
         light.addIngredient(Material.GLOWSTONE_DUST);
         ctx.crafts().registerRecipe(light);
 
-        Debug.info("LightBlockFeature: регистрирую listener на ломание блока LIGHT.");
-        ctx.registerEvents(new LightBlockListener());
-
+        LightBlockViewListener viewListener = null;
         if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
             Debug.info("LightBlockFeature: ProtocolLib найден, регистрирую LightBlockViewListener.");
-            ctx.registerEvents(new LightBlockViewListener());
+            viewListener = new LightBlockViewListener();
+            ctx.registerEvents(viewListener);
         } else {
             Debug.warn("LightBlockFeature: ProtocolLib не найден, визуализация LIGHT выключена.");
         }
+
+        Debug.info("LightBlockFeature: регистрирую listener на ломание блока LIGHT.");
+        ctx.registerEvents(new LightBlockListener(viewListener));
 
         Debug.info("LightBlockFeature.enable(): завершено.");
     }

@@ -7,6 +7,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import kz.bejiihiu.xscraft.util.Debug;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -31,7 +32,6 @@ import java.util.UUID;
 public final class LightBlockViewListener implements Listener {
 
     private static final int VIEW_RADIUS = 7;
-    private static final int VIEW_RADIUS_SQUARED = VIEW_RADIUS * VIEW_RADIUS;
 
     private final ProtocolManager protocolManager;
     private final Plugin plugin;
@@ -75,7 +75,7 @@ public final class LightBlockViewListener implements Listener {
             clearFakeBlocks(player);
             return;
         }
-        Set<BlockVector> nearbyLightBlocks = findNearbyLightBlocks(player);
+        Set<BlockVector> nearbyLightBlocks = findNearbyLightBlocks(player.getLocation(), VIEW_RADIUS);
         Set<BlockVector> cached = cachedBlocks.computeIfAbsent(player.getUniqueId(), key -> new HashSet<>());
 
         if (nearbyLightBlocks.equals(cached)) {
@@ -99,25 +99,49 @@ public final class LightBlockViewListener implements Listener {
         cached.addAll(nearbyLightBlocks);
     }
 
+    public void refreshForPlayersInRadius(Location center, int radius) {
+        World world = center.getWorld();
+        if (world == null) {
+            return;
+        }
+        int radiusSquared = radius * radius;
+        for (Player player : world.getPlayers()) {
+            if (!player.isOnline()) {
+                continue;
+            }
+            if (player.getLocation().distanceSquared(center) > radiusSquared) {
+                continue;
+            }
+            if (!isHoldingLight(player)) {
+                continue;
+            }
+            refreshForPlayer(player);
+        }
+    }
+
     private boolean isHoldingLight(Player player) {
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         ItemStack offHand = player.getInventory().getItemInOffHand();
         return mainHand.getType() == Material.LIGHT || offHand.getType() == Material.LIGHT;
     }
 
-    private Set<BlockVector> findNearbyLightBlocks(Player player) {
+    private Set<BlockVector> findNearbyLightBlocks(Location center, int radius) {
         Set<BlockVector> result = new HashSet<>();
-        World world = player.getWorld();
-        int baseX = player.getLocation().getBlockX();
-        int baseY = player.getLocation().getBlockY();
-        int baseZ = player.getLocation().getBlockZ();
+        World world = center.getWorld();
+        if (world == null) {
+            return result;
+        }
+        int radiusSquared = radius * radius;
+        int baseX = center.getBlockX();
+        int baseY = center.getBlockY();
+        int baseZ = center.getBlockZ();
 
-        for (int dx = -VIEW_RADIUS; dx <= VIEW_RADIUS; dx++) {
+        for (int dx = -radius; dx <= radius; dx++) {
             int x = baseX + dx;
-            for (int dy = -VIEW_RADIUS; dy <= VIEW_RADIUS; dy++) {
+            for (int dy = -radius; dy <= radius; dy++) {
                 int y = baseY + dy;
-                for (int dz = -VIEW_RADIUS; dz <= VIEW_RADIUS; dz++) {
-                    if (dx * dx + dy * dy + dz * dz > VIEW_RADIUS_SQUARED) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (dx * dx + dy * dy + dz * dz > radiusSquared) {
                         continue;
                     }
                     int z = baseZ + dz;
