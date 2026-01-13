@@ -7,8 +7,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,7 +73,7 @@ public final class CraftRegistry {
     }
 
     public Set<NamespacedKey> getOwnedRecipes() {
-        return Collections.unmodifiableSet(new HashSet<>(ownedRecipes));
+        return Set.copyOf(ownedRecipes);
     }
 
     public void unregisterAll() {

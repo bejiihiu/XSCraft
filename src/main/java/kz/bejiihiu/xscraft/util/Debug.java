@@ -73,6 +73,6 @@ public final class Debug {
 
     private static String prefix(String msg) {
         String thread = Thread.currentThread().getName();
-        return "[XSCraft] [" + thread + "] " + msg;
+        return "[" + thread + "] " + msg;
     }
 }

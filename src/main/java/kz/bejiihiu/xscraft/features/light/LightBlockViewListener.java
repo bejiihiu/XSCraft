@@ -22,7 +22,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -65,7 +64,7 @@ public final class LightBlockViewListener implements Listener {
     }
 
     private void scheduleRefresh(Player player) {
-        Bukkit.getScheduler().runTask(plugin, () -> refreshForPlayer(player));
+        Bukkit.getRegionScheduler().run(plugin, player.getLocation(), task  -> refreshForPlayer(player));
     }
 
     private void refreshForPlayer(Player player) {
@@ -103,8 +102,7 @@ public final class LightBlockViewListener implements Listener {
     private boolean isHoldingLight(Player player) {
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         ItemStack offHand = player.getInventory().getItemInOffHand();
-        return (mainHand != null && mainHand.getType() == Material.LIGHT)
-                || (offHand != null && offHand.getType() == Material.LIGHT);
+        return mainHand.getType() == Material.LIGHT || offHand.getType() == Material.LIGHT;
     }
 
     private Set<BlockVector> findNearbyLightBlocks(Player player) {
@@ -161,7 +159,7 @@ public final class LightBlockViewListener implements Listener {
         packet.getBlockData().write(0, data);
         try {
             protocolManager.sendServerPacket(player, packet);
-        } catch (InvocationTargetException e) {
+        } catch (Exception e) {
             Debug.error("LightBlockViewListener: ошибка отправки BLOCK_CHANGE пакета.", e);
         }
     }

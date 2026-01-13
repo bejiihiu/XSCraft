@@ -2,6 +2,8 @@ package kz.bejiihiu.xscraft.features.invisibleframes;
 
 import kz.bejiihiu.xscraft.core.Keys;
 import kz.bejiihiu.xscraft.util.Debug;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,7 +29,7 @@ public final class InvisibleFrameItems {
         ItemStack out = new ItemStack(type, 1);
         ItemMeta meta = out.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(getDisplayName(type));
+            meta.displayName(getDisplayName(type));
             meta.getPersistentDataContainer().set(keys.tagInvisibleFrame(), PersistentDataType.BYTE, (byte) 1);
             out.setItemMeta(meta);
             Debug.info("InvisibleFrameItems.createTaggedFrame(): PDC tag установлен: " + keys.tagInvisibleFrame());
@@ -57,10 +59,10 @@ public final class InvisibleFrameItems {
         return tagged;
     }
 
-    private static String getDisplayName(Material type) {
+    private static Component getDisplayName(Material type) {
         if (type == Material.GLOW_ITEM_FRAME) {
-            return "Невидимая светящаяся рамка";
+            return Component.text("Невидимая рамка").color(TextColor.color(255, 36, 0));
         }
-        return "Невидимая рамка";
+        return Component.text("Невидимая рамка");
     }
 }
