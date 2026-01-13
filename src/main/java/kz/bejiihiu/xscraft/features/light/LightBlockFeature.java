@@ -28,14 +28,6 @@ public final class LightBlockFeature implements PluginFeature {
         light.addIngredient(Material.GLOWSTONE_DUST);
         ctx.crafts().registerRecipe(light);
 
-        Debug.info("LightBlockFeature: регистрирую рецепт 4x LIGHT -> GLASS (утилизация)");
-        ShapelessRecipe recycle = new ShapelessRecipe(
-                ctx.keys().recipeLightRecycle(),
-                new ItemStack(Material.GLASS, 1)
-        );
-        recycle.addIngredient(4, Material.LIGHT);
-        ctx.crafts().registerRecipe(recycle);
-
         Debug.info("LightBlockFeature: регистрирую listener на ломание блока LIGHT.");
         ctx.registerEvents(new LightBlockListener());
 

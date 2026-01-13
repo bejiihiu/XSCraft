@@ -15,7 +15,6 @@ public final class Keys {
     private final NamespacedKey rInvisibleItemFrame;
     private final NamespacedKey rInvisibleGlowItemFrame;
     private final NamespacedKey rLightCraft;
-    private final NamespacedKey rLightRecycle;
 
     public Keys(Plugin plugin) {
         this.plugin = plugin;
@@ -25,13 +24,12 @@ public final class Keys {
         this.rInvisibleItemFrame = new NamespacedKey(plugin, "craft_invisible_item_frame");
         this.rInvisibleGlowItemFrame = new NamespacedKey(plugin, "craft_invisible_glow_item_frame");
         this.rLightCraft = new NamespacedKey(plugin, "craft_light_block");
-        this.rLightRecycle = new NamespacedKey(plugin, "recycle_light_block");
 
         Debug.info("Keys: создано NamespacedKey. tagInvisibleFrame=" + tagInvisibleFrame
                 + ", rInvisibleItemFrame=" + rInvisibleItemFrame
                 + ", rInvisibleGlowItemFrame=" + rInvisibleGlowItemFrame
                 + ", rLightCraft=" + rLightCraft
-                + ", rLightRecycle=" + rLightRecycle);
+                + ")");
     }
 
     public Plugin plugin() {
@@ -54,7 +52,4 @@ public final class Keys {
         return rLightCraft;
     }
 
-    public NamespacedKey recipeLightRecycle() {
-        return rLightRecycle;
-    }
 }
